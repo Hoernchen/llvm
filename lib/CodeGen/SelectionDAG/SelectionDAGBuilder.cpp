@@ -5035,6 +5035,7 @@ SelectionDAGBuilder::visitIntrinsicCall(const CallInst &I, unsigned Intrinsic) {
     setValue(&I, Res);
     return 0;
   }
+  case Intrinsic::invariant:
   case Intrinsic::var_annotation:
     // Discard annotate attributes
     return 0;

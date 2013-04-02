@@ -287,6 +287,12 @@ bool llvm::isInstructionTriviallyDead(Instruction *I,
     return true;
   }
 
+  if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(I)) {
+    // Invariants are dead if their condition is undef.
+    if (II->getIntrinsicID() == Intrinsic::invariant)
+      return isa<UndefValue>(II->getArgOperand(0));
+  }
+
   if (!I->mayHaveSideEffects()) return true;
 
   // Special case intrinsics that "may have side effects" but can be deleted

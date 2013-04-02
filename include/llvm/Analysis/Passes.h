@@ -66,6 +66,12 @@ namespace llvm {
 
   //===--------------------------------------------------------------------===//
   //
+  // createEphemeralValuesPass - This pass identifies ephemeral values.
+  //
+  ModulePass *createEphemeralValuesPass();
+
+  //===--------------------------------------------------------------------===//
+  //
   /// createLibCallAliasAnalysisPass - Create an alias analysis pass that knows
   /// about the semantics of a set of libcalls specified by LCI.  The newly
   /// constructed pass takes ownership of the pointer that is provided.

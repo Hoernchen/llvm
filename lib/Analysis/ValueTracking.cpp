@@ -1974,6 +1974,7 @@ bool llvm::isSafeToSpeculativelyExecute(const Value *V,
        // should be considered at least *safe* to speculate...
        case Intrinsic::dbg_declare:
        case Intrinsic::dbg_value:
+       case Intrinsic::invariant:
          return true;
 
        case Intrinsic::bswap:

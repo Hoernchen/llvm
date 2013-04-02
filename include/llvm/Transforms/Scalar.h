@@ -32,6 +32,12 @@ FunctionPass *createConstantPropagationPass();
 
 //===----------------------------------------------------------------------===//
 //
+// AlignmentInvProp - A worklist driven alignment assumption propagation pass
+//
+FunctionPass *createAlignmentInvPropPass();
+
+//===----------------------------------------------------------------------===//
+//
 // SCCP - Sparse conditional constant propagation.
 //
 FunctionPass *createSCCPPass();

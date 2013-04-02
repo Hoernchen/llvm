@@ -24,6 +24,7 @@ class CallSite;
 class DataLayout;
 class Function;
 class TargetTransformInfo;
+class EphemeralValues;
 
 namespace InlineConstants {
   // Various magic constants used to adjust heuristics.
@@ -102,6 +103,8 @@ public:
 class InlineCostAnalysis : public CallGraphSCCPass {
   const DataLayout *TD;
   const TargetTransformInfo *TTI;
+  /// EphemeralValues if available, or null.
+  const EphemeralValues *EV;
 
 public:
   static char ID;
@@ -112,6 +115,8 @@ public:
   // Pass interface implementation.
   void getAnalysisUsage(AnalysisUsage &AU) const;
   bool runOnSCC(CallGraphSCC &SCC);
+
+  void setEphemeralValues(const EphemeralValues *EVals) { EV = EVals; }
 
   /// \brief Get an InlineCost object representing the cost of inlining this
   /// callsite.

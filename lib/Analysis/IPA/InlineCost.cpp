@@ -12,6 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #define DEBUG_TYPE "inline-cost"
+#include "llvm/Analysis/EphemeralValues.h"
 #include "llvm/Analysis/InlineCost.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SetVector.h"
@@ -44,6 +45,8 @@ class CallAnalyzer : public InstVisitor<CallAnalyzer, bool> {
 
   // DataLayout if available, or null.
   const DataLayout *const TD;
+  // EphemeralValues if available, or null.
+  const EphemeralValues *const EV;
 
   /// The TargetTransformInfo available for this compilation.
   const TargetTransformInfo &TTI;
@@ -134,9 +137,9 @@ class CallAnalyzer : public InstVisitor<CallAnalyzer, bool> {
   bool visitCallSite(CallSite CS);
 
 public:
-  CallAnalyzer(const DataLayout *TD, const TargetTransformInfo &TTI,
-               Function &Callee, int Threshold)
-      : TD(TD), TTI(TTI), F(Callee), Threshold(Threshold), Cost(0),
+  CallAnalyzer(const DataLayout *TD,  const EphemeralValues *EV,
+               const TargetTransformInfo &TTI, Function &Callee, int Threshold)
+      : TD(TD), EV(EV), TTI(TTI), F(Callee), Threshold(Threshold), Cost(0),
         IsCallerRecursive(false), IsRecursiveCall(false),
         ExposesReturnsTwice(false), HasDynamicAlloca(false),
         ContainsNoDuplicateCall(false), AllocatedSize(0), NumInstructions(0),
@@ -771,7 +774,7 @@ bool CallAnalyzer::visitCallSite(CallSite CS) {
   // during devirtualization and so we want to give it a hefty bonus for
   // inlining, but cap that bonus in the event that inlining wouldn't pan
   // out. Pretend to inline the function, with a custom threshold.
-  CallAnalyzer CA(TD, TTI, *F, InlineConstants::IndirectCallThreshold);
+  CallAnalyzer CA(TD, EV, TTI, *F, InlineConstants::IndirectCallThreshold);
   if (CA.analyzeCall(CS)) {
     // We were able to inline the indirect call! Subtract the cost from the
     // bonus we want to apply, but don't go below zero.
@@ -815,7 +818,7 @@ bool CallAnalyzer::analyzeBlock(BasicBlock *BB) {
     // all of the per-instruction logic. The visit tree returns true if we
     // consumed the instruction in any way, and false if the instruction's base
     // cost should count against inlining.
-    if (Base::visit(I))
+    if ((EV && EV->isEphemeralValue(I)) || Base::visit(I))
       ++NumInstructionsSimplified;
     else
       Cost += InlineConstants::InstrCost;
@@ -1147,7 +1150,7 @@ INITIALIZE_PASS_END(InlineCostAnalysis, "inline-cost", "Inline Cost Analysis",
 
 char InlineCostAnalysis::ID = 0;
 
-InlineCostAnalysis::InlineCostAnalysis() : CallGraphSCCPass(ID), TD(0) {}
+InlineCostAnalysis::InlineCostAnalysis() : CallGraphSCCPass(ID), TD(0), EV(0) {}
 
 InlineCostAnalysis::~InlineCostAnalysis() {}
 
@@ -1159,6 +1162,7 @@ void InlineCostAnalysis::getAnalysisUsage(AnalysisUsage &AU) const {
 
 bool InlineCostAnalysis::runOnSCC(CallGraphSCC &SCC) {
   TD = getAnalysisIfAvailable<DataLayout>();
+  EV = getAnalysisIfAvailable<EphemeralValues>();
   TTI = &getAnalysis<TargetTransformInfo>();
   return false;
 }
@@ -1194,7 +1198,7 @@ InlineCost InlineCostAnalysis::getInlineCost(CallSite CS, Function *Callee,
   DEBUG(llvm::dbgs() << "      Analyzing call of " << Callee->getName()
         << "...\n");
 
-  CallAnalyzer CA(TD, *TTI, *Callee, Threshold);
+  CallAnalyzer CA(TD, EV, *TTI, *Callee, Threshold);
   bool ShouldInline = CA.analyzeCall(CS);
 
   DEBUG(CA.dump());

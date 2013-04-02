@@ -23,6 +23,7 @@
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/IntrinsicInst.h"
+#include "llvm/IR/Intrinsics.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/CFG.h"
 #include "llvm/Support/InstIterator.h"
@@ -49,6 +50,13 @@ namespace {
 char ADCE::ID = 0;
 INITIALIZE_PASS(ADCE, "adce", "Aggressive Dead Code Elimination", false, false)
 
+static bool isInvariantIntrinsic(Instruction *I) {
+  if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(I))
+    return II->getIntrinsicID() == Intrinsic::invariant;
+
+  return false;
+}
+
 bool ADCE::runOnFunction(Function& F) {
   SmallPtrSet<Instruction*, 128> alive;
   SmallVector<Instruction*, 128> worklist;
@@ -57,6 +65,7 @@ bool ADCE::runOnFunction(Function& F) {
   for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I)
     if (isa<TerminatorInst>(I.getInstructionIterator()) ||
         isa<DbgInfoIntrinsic>(I.getInstructionIterator()) ||
+        isInvariantIntrinsic(I.getInstructionIterator()) ||
         isa<LandingPadInst>(I.getInstructionIterator()) ||
         I->mayHaveSideEffects()) {
       alive.insert(I.getInstructionIterator());

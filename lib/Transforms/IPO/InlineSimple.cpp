@@ -14,6 +14,7 @@
 #define DEBUG_TYPE "inline"
 #include "llvm/Transforms/IPO.h"
 #include "llvm/Analysis/CallGraph.h"
+#include "llvm/Analysis/EphemeralValues.h"
 #include "llvm/Analysis/InlineCost.h"
 #include "llvm/IR/CallingConv.h"
 #include "llvm/IR/DataLayout.h"
@@ -62,6 +63,7 @@ char SimpleInliner::ID = 0;
 INITIALIZE_PASS_BEGIN(SimpleInliner, "inline",
                 "Function Integration/Inlining", false, false)
 INITIALIZE_AG_DEPENDENCY(CallGraph)
+INITIALIZE_PASS_DEPENDENCY(EphemeralValues)
 INITIALIZE_PASS_DEPENDENCY(InlineCostAnalysis)
 INITIALIZE_PASS_END(SimpleInliner, "inline",
                 "Function Integration/Inlining", false, false)
@@ -78,6 +80,7 @@ bool SimpleInliner::runOnSCC(CallGraphSCC &SCC) {
 }
 
 void SimpleInliner::getAnalysisUsage(AnalysisUsage &AU) const {
+  AU.addRequired<EphemeralValues>();
   AU.addRequired<InlineCostAnalysis>();
   Inliner::getAnalysisUsage(AU);
 }

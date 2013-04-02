@@ -28,6 +28,7 @@ using namespace llvm;
 /// ScalarOpts library.
 void llvm::initializeScalarOpts(PassRegistry &Registry) {
   initializeADCEPass(Registry);
+  initializeAlignmentInvPropPass(Registry);
   initializeBlockPlacementPass(Registry);
   initializeCodeGenPreparePass(Registry);
   initializeConstantPropagationPass(Registry);
@@ -69,6 +70,10 @@ void LLVMInitializeScalarOpts(LLVMPassRegistryRef R) {
 
 void LLVMAddAggressiveDCEPass(LLVMPassManagerRef PM) {
   unwrap(PM)->add(createAggressiveDCEPass());
+}
+
+void LLVMAddAlignmentInvPropPass(LLVMPassManagerRef PM) {
+  unwrap(PM)->add(createAlignmentInvPropPass());
 }
 
 void LLVMAddCFGSimplificationPass(LLVMPassManagerRef PM) {

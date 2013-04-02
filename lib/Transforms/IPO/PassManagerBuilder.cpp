@@ -193,6 +193,8 @@ void PassManagerBuilder::populateModulePassManager(PassManagerBase &MPM) {
     MPM.add(createLoopUnrollPass());          // Unroll small loops
   addExtensionsToPM(EP_LoopOptimizerEnd, MPM);
 
+  MPM.add(createAlignmentInvPropPass());      // Alignment invariants
+
   if (OptLevel > 1)
     MPM.add(createGVNPass());                 // Remove redundancies
   MPM.add(createMemCpyOptPass());             // Remove memcpy / form memset

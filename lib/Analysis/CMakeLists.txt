@@ -16,6 +16,7 @@ add_llvm_library(LLVMAnalysis
   DependenceAnalysis.cpp
   DomPrinter.cpp
   DominanceFrontier.cpp
+  EphemeralValues.cpp
   IVUsers.cpp
   InstCount.cpp
   InstructionSimplify.cpp

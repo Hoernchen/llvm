@@ -1,5 +1,6 @@
 add_llvm_library(LLVMScalarOpts
   ADCE.cpp
+  AlignmentInvProp.cpp
   BasicBlockPlacement.cpp
   CodeGenPrepare.cpp
   ConstantProp.cpp

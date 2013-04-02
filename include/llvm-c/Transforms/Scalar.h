@@ -35,6 +35,9 @@ extern "C" {
 /** See llvm::createAggressiveDCEPass function. */
 void LLVMAddAggressiveDCEPass(LLVMPassManagerRef PM);
 
+/** See llvm::createAlignmentInvPropPass function. */
+void LLVMAddAlignmentInvPropPass(LLVMPassManagerRef PM);
+
 /** See llvm::createCFGSimplificationPass function. */
 void LLVMAddCFGSimplificationPass(LLVMPassManagerRef PM);
 
